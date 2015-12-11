@@ -1,4 +1,4 @@
-(defproject pdfa-core "0.0.1-SNAPSHOT"
+(defproject pdfa-core "0.0.1"
   :description "Port of clj-pdf"
   :url "http://www.solita.fi"
   :license {:name "L GPL 3"
@@ -20,3 +20,7 @@
                                 (flare.clojure-test/install!)]}}
   :cljsbuild {:builds {:dev {:source-paths ["src"]}}}
 )
+
+
+;[itext "4.2.1" :exclusions [org.bouncycastle/bctsp-jdk14 xml-apis]]
+;[clj-pdf "1.11.21" :exclusions [xalan org.apache.xmlgraphics/batik-js com.lowagie/itext]]
