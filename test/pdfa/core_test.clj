@@ -8,7 +8,8 @@
            (java.util List ArrayList)
            (com.lowagie.text.rtf.parser RtfParser)
            (com.lowagie.text Document)
-           (com.lowagie.text.pdf PdfWriter)))
+           (com.lowagie.text.pdf PdfWriter)
+           (javax.imageio ImageIO)))
 
 (facts "Valid embedded Fonts "
        (fact "default Font loads  " (.getPostscriptFontName (.getBaseFont (pdfa/font {:size 22}))) => "NimbusSanL-Regu")
@@ -16,6 +17,7 @@
        (fact "Given non-existing font throws exception " (.getPostscriptFontName (.getBaseFont (pdfa/font {:size 22 :ttf-name "fonts/n019003lXXXX.afm"}))) => (throws IllegalArgumentException))
        (fact "Given illegal font-file extension throws exception " (.getPostscriptFontName (.getBaseFont (pdfa/font {:size 22 :ttf-name "fonts/n019003l.txt"}))) => (throws IllegalArgumentException))
        )
+
 
 (facts "Valid PDF/A metadata "
        (let [pdf-markup [{:title  "Lupapiste.fi"
@@ -26,7 +28,7 @@
                                    :align :right}
                           :pages  true}
 
-                         ;;[:image {:xscale 1 :yscale 1} (ImageIO/read (io/resource "public/img/logo-v2-flat.png"))]
+                         [:image {:xscale 1 :yscale 1} (ImageIO/read (io/resource "logo-v2-flat.png"))]
                          [:spacer]
                          [:heading {:style {:size 20}} "lang + tos"]
                          [:spacer]
@@ -71,7 +73,7 @@
 
            ;(debug "dc meta:                   "  (.getInputStreamAsString (.getMetadata (.getDocumentCatalog doc))))
            )
-         (.delete file)))
+         (.delete file)) )
 
 #_(facts "rtf to pdf/a"
          (debug "env: " (System/getenv "os.name"))
