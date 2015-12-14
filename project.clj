@@ -1,4 +1,4 @@
-(defproject pdfa-core "0.0.3"
+(defproject pdfa-core "0.0.4"
   :description "Port of clj-pdf"
   :url "http://www.solita.fi"
   :license {:name "L GPL 3"

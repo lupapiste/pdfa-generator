@@ -11,13 +11,15 @@
            (com.lowagie.text.pdf PdfWriter)
            (javax.imageio ImageIO)))
 
+;; Change this to leave the files after test for manual inspection
+(def delete-files true)
+
 (facts "Valid embedded Fonts "
-       (fact "default Font loads  " (.getPostscriptFontName (.getBaseFont (pdfa/font {:size 22}))) => "NimbusSanL-Regu")
-       (fact "Given existing font loads" (.getPostscriptFontName (.getBaseFont (pdfa/font {:size 22 :ttf-name "fonts/n019003l.afm"}))) => "NimbusSanL-Regu")
+       (fact "default Font loads  " (.getPostscriptFontName (.getBaseFont (pdfa/font {:size 22}))) => "LiberationSans")
+;       (fact "Given existing font loads" (.getPostscriptFontName (.getBaseFont (pdfa/font {:size 22 :ttf-name "liberation-fonts-ttf-2.00.1/LiberationSans-Regular.ttf"}))) => "LiberationSans")
        (fact "Given non-existing font throws exception " (.getPostscriptFontName (.getBaseFont (pdfa/font {:size 22 :ttf-name "fonts/n019003lXXXX.afm"}))) => (throws IllegalArgumentException))
        (fact "Given illegal font-file extension throws exception " (.getPostscriptFontName (.getBaseFont (pdfa/font {:size 22 :ttf-name "fonts/n019003l.txt"}))) => (throws IllegalArgumentException))
        )
-
 
 (facts "Valid PDF/A metadata "
        (let [pdf-markup [{:title  "Lupapiste.fi"
@@ -27,7 +29,6 @@
                                                                       "application.export.page"])
                                    :align :right}
                           :pages  true}
-
                          [:image {:xscale 1 :yscale 1} (ImageIO/read (io/resource "logo-v2-flat.png"))]
                          [:spacer]
                          [:heading {:style {:size 20}} "lang + tos"]
@@ -65,7 +66,7 @@
              fis (FileOutputStream. file)]
          (with-open [out (io/output-stream file)]
            (pdfa/pdf pdf-markup out))
-         (debug "  test file: " (.getAbsolutePath file))
+
          (let [doc (PDDocument/load file)
                info (.getDocumentInformation doc)]
            (fact "title" (.getPropertyStringValue info "Title") => "Lupapiste.fi")
@@ -73,7 +74,9 @@
 
            ;(debug "dc meta:                   "  (.getInputStreamAsString (.getMetadata (.getDocumentCatalog doc))))
            )
-         (.delete file)) )
+         (if delete-files
+           (.delete file)
+           (debug "**  Created PDF file: " (.getAbsolutePath file)))))
 
 #_(facts "rtf to pdf/a"
          (debug "env: " (System/getenv "os.name"))
@@ -92,4 +95,3 @@
            (.close doc)
            )
          )
-

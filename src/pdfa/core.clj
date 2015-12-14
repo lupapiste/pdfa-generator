@@ -44,6 +44,8 @@
 
 (declare ^:dynamic *cache*)
 (def fonts-registered? (atom nil))
+;"fonts/n019003l.afm"
+(def default-font "liberation-fonts-ttf-2.00.1/LiberationSans-Regular.ttf")
 
 (declare make-section)
 
@@ -55,13 +57,13 @@
 
 (defn- get-alignment [align]
   (condp = (when align (name align))
-    "left"      Element/ALIGN_LEFT
-    "center"    Element/ALIGN_CENTER
-    "right"     Element/ALIGN_RIGHT
+    "left" Element/ALIGN_LEFT
+    "center" Element/ALIGN_CENTER
+    "right" Element/ALIGN_RIGHT
     "justified" Element/ALIGN_JUSTIFIED
-    "top"       Element/ALIGN_TOP
-    "middle"    Element/ALIGN_MIDDLE
-    "bottom"    Element/ALIGN_BOTTOM
+    "top" Element/ALIGN_TOP
+    "middle" Element/ALIGN_MIDDLE
+    "bottom" Element/ALIGN_BOTTOM
     Element/ALIGN_LEFT))
 
 (defn- set-background [element {:keys [background]}]
@@ -70,12 +72,12 @@
 
 (defn get-style [style]
   (condp = (when style (name style))
-    "bold"        Font/BOLD
-    "italic"      Font/ITALIC
+    "bold" Font/BOLD
+    "italic" Font/ITALIC
     "bold-italic" Font/BOLDITALIC
-    "normal"      Font/NORMAL
-    "strikethru"  Font/STRIKETHRU
-    "underline"   Font/UNDERLINE
+    "normal" Font/NORMAL
+    "strikethru" Font/STRIKETHRU
+    "underline" Font/UNDERLINE
     Font/NORMAL))
 
 (defn- compute-font-style [styles]
@@ -106,9 +108,9 @@
     ttf-name :ttf-name}]
   (when-not (empty? family) (warn "Font :family - keyword is not supported in pdfa-core, use :ttf-name only !"))
   (let [resource-url (if (empty? ttf-name)
-                       "fonts/n019003l.afm"
+                       default-font
                        (do (valid-font-resource? ttf-name)
-                         ttf-name))
+                           ttf-name))
         font-size (float (or size 10))
         font-style (cond
                      styles (compute-font-style styles)
@@ -120,63 +122,63 @@
 
 (defn- page-size [size]
   (condp = (when size (name size))
-    "a0"                        PageSize/A0
-    "a1"                        PageSize/A1
-    "a2"                        PageSize/A2
-    "a3"                        PageSize/A3
-    "a4"                        PageSize/A4
-    "a5"                        PageSize/A5
-    "a6"                        PageSize/A6
-    "a7"                        PageSize/A7
-    "a8"                        PageSize/A8
-    "a9"                        PageSize/A9
-    "a10"                       PageSize/A10
-    "arch-a"                    PageSize/ARCH_A
-    "arch-b"                    PageSize/ARCH_B
-    "arch-c"                    PageSize/ARCH_C
-    "arch-d"                    PageSize/ARCH_D
-    "arch-e"                    PageSize/ARCH_E
-    "b0"                        PageSize/B0
-    "b1"                        PageSize/B1
-    "b2"                        PageSize/B2
-    "b3"                        PageSize/B3
-    "b4"                        PageSize/B4
-    "b5"                        PageSize/B5
-    "b6"                        PageSize/B6
-    "b7"                        PageSize/B7
-    "b8"                        PageSize/B8
-    "b9"                        PageSize/B9
-    "b10"                       PageSize/B10
-    "crown-octavo"              PageSize/CROWN_OCTAVO
-    "crown-quarto"              PageSize/CROWN_QUARTO
-    "demy-octavo"               PageSize/DEMY_OCTAVO
-    "demy-quarto"               PageSize/DEMY_QUARTO
-    "executive"                 PageSize/EXECUTIVE
-    "flsa"                      PageSize/FLSA
-    "flse"                      PageSize/FLSE
-    "halfletter"                PageSize/HALFLETTER
-    "id-1"                      PageSize/ID_1
-    "id-2"                      PageSize/ID_2
-    "id-3"                      PageSize/ID_3
-    "large-crown-octavo"        PageSize/LARGE_CROWN_OCTAVO
-    "large-crown-quarto"        PageSize/LARGE_CROWN_QUARTO
-    "ledger"                    PageSize/LEDGER
-    "legal"                     PageSize/LEGAL
-    "letter"                    PageSize/LETTER
-    "note"                      PageSize/NOTE
-    "penguin-large-paperback"   PageSize/PENGUIN_LARGE_PAPERBACK
-    "penguin-small-paperback"   PageSize/PENGUIN_SMALL_PAPERBACK
-    "postcard"                  PageSize/POSTCARD
-    "royal-octavo"              PageSize/ROYAL_OCTAVO
-    "royal-quarto"              PageSize/ROYAL_QUARTO
-    "small-paperback"           PageSize/SMALL_PAPERBACK
-    "tabloid"                   PageSize/TABLOID
+    "a0" PageSize/A0
+    "a1" PageSize/A1
+    "a2" PageSize/A2
+    "a3" PageSize/A3
+    "a4" PageSize/A4
+    "a5" PageSize/A5
+    "a6" PageSize/A6
+    "a7" PageSize/A7
+    "a8" PageSize/A8
+    "a9" PageSize/A9
+    "a10" PageSize/A10
+    "arch-a" PageSize/ARCH_A
+    "arch-b" PageSize/ARCH_B
+    "arch-c" PageSize/ARCH_C
+    "arch-d" PageSize/ARCH_D
+    "arch-e" PageSize/ARCH_E
+    "b0" PageSize/B0
+    "b1" PageSize/B1
+    "b2" PageSize/B2
+    "b3" PageSize/B3
+    "b4" PageSize/B4
+    "b5" PageSize/B5
+    "b6" PageSize/B6
+    "b7" PageSize/B7
+    "b8" PageSize/B8
+    "b9" PageSize/B9
+    "b10" PageSize/B10
+    "crown-octavo" PageSize/CROWN_OCTAVO
+    "crown-quarto" PageSize/CROWN_QUARTO
+    "demy-octavo" PageSize/DEMY_OCTAVO
+    "demy-quarto" PageSize/DEMY_QUARTO
+    "executive" PageSize/EXECUTIVE
+    "flsa" PageSize/FLSA
+    "flse" PageSize/FLSE
+    "halfletter" PageSize/HALFLETTER
+    "id-1" PageSize/ID_1
+    "id-2" PageSize/ID_2
+    "id-3" PageSize/ID_3
+    "large-crown-octavo" PageSize/LARGE_CROWN_OCTAVO
+    "large-crown-quarto" PageSize/LARGE_CROWN_QUARTO
+    "ledger" PageSize/LEDGER
+    "legal" PageSize/LEGAL
+    "letter" PageSize/LETTER
+    "note" PageSize/NOTE
+    "penguin-large-paperback" PageSize/PENGUIN_LARGE_PAPERBACK
+    "penguin-small-paperback" PageSize/PENGUIN_SMALL_PAPERBACK
+    "postcard" PageSize/POSTCARD
+    "royal-octavo" PageSize/ROYAL_OCTAVO
+    "royal-quarto" PageSize/ROYAL_QUARTO
+    "small-paperback" PageSize/SMALL_PAPERBACK
+    "tabloid" PageSize/TABLOID
     PageSize/A4))
 
 (defn- page-orientation [page-size orientation]
   (if page-size
     (condp = (if orientation (name orientation))
-      "landscape"    (.rotate page-size)
+      "landscape" (.rotate page-size)
       page-size)))
 
 
@@ -212,7 +214,7 @@
               meta
               (if (string? item) [:chunk item] item))))
 
-    paragraph ))
+    paragraph))
 
 
 (defn- li [{:keys [numbered
@@ -228,10 +230,10 @@
                    symbol] :as meta}
            & items]
   (let [list (cond
-               roman           (new RomanList)
-               greek           (new GreekList)
-               dingbats        (new ZapfDingbatsList dingbats-char-num)
-               dingbatsnumber  (new ZapfDingbatsNumberList dingbatsnumber-type)
+               roman (new RomanList)
+               greek (new GreekList)
+               dingbats (new ZapfDingbatsList dingbats-char-num)
+               dingbatsnumber (new ZapfDingbatsNumberList dingbatsnumber-type)
                :else (new List (or numbered false) (or lettered false)))]
 
     (if lowercase (.setLowercase list lowercase))
@@ -272,9 +274,9 @@
 
 (defn- anchor [{:keys [style leading id target] :as meta} content]
   (let [a (cond (and style leading) (new Anchor (float leading) content (font style))
-                leading             (new Anchor (float leading) (styled-item meta content))
-                style               (new Anchor content (font style))
-                :else               (new Anchor (styled-item meta content)))]
+                leading (new Anchor (float leading) (styled-item meta content))
+                style (new Anchor content (font style))
+                :else (new Anchor (styled-item meta content)))]
     (if id (.setName a id))
     (if target (.setReference a target))
     a))
@@ -324,7 +326,7 @@
           (if border-width (.setBorderWidth c (float border-width)))
           (if border-width-bottom (.setBorderWidthBottom c (float border-width-bottom)))
           (if border-width-left (.setBorderWidthLeft c (float border-width-left)))
-          (if border-width-right (.setBorderWidthRight c  (float border-width-right)))
+          (if border-width-right (.setBorderWidthRight c (float border-width-right)))
           (if border-width-top (.setBorderWidthTop c (float border-width-top)))
           (.setHorizontalAlignment c (get-alignment align))))
 
@@ -372,7 +374,7 @@
           (if border-width (.setBorderWidth c (float border-width)))
           (if border-width-bottom (.setBorderWidthBottom c (float border-width-bottom)))
           (if border-width-left (.setBorderWidthLeft c (float border-width-left)))
-          (if border-width-right (.setBorderWidthRight c  (float border-width-right)))
+          (if border-width-right (.setBorderWidthRight c (float border-width-right)))
           (if border-width-top (.setBorderWidthTop c (float border-width-top)))
           (if rotation (.setRotation c (int rotation)))
           (if height (.setFixedHeight c (float height)))
@@ -421,12 +423,12 @@
 
 
 (defn- table [{:keys [color spacing padding offset header border border-width cell-border width widths align num-cols]
-               :as meta}
+               :as   meta}
               & rows]
   (when (< (count rows) 1) (throw (new Exception "Table must contain rows!")))
 
   (let [cols (or num-cols (apply max (cons ((fnil count []) header) (map count rows))))
-        tbl  (doto (new Table cols (count rows)) (.setWidth (float (or width 100))))]
+        tbl (doto (new Table cols (count rows)) (.setWidth (float (or width 100))))]
 
     (when widths
       (if (= (count widths) cols)
@@ -455,7 +457,7 @@
     tbl))
 
 (defn- pdf-table [{:keys [color spacing-before spacing-after cell-border bounding-box num-cols horizontal-align table-events]
-                   :as meta}
+                   :as   meta}
                   widths
                   & rows]
   (when (empty? rows) (throw (new Exception "Table must contain at least one row")))
@@ -552,7 +554,7 @@
           (and xscale yscale) (.scalePercent img (float (* page-scale xscale)) (float (* page-scale yscale)))
           xscale (.scalePercent img (float (* page-scale xscale)) (float 100))
           yscale (.scalePercent img (float 100) (float (* page-scale yscale)))
-          :else (when (or (>  img-width available-width) (>  img-height available-height))
+          :else (when (or (> img-width available-width) (> img-height available-height))
                   (.scalePercent img (float page-scale))))))
 
     (if width (.scaleAbsoluteWidth img (float width)))
@@ -660,49 +662,49 @@
 
        (apply
          (condp = tag
-           :anchor      anchor
-           :annotation  annotation
-           :cell        cell
-           :pdf-cell    pdf-cell
-           :chapter     chapter
-           :chart       chart
-           :chunk       text-chunk
-           :heading     heading
-           :image       image
-           :graphics    g2d/with-graphics
-           :svg         svg-element
-           :line        line
-           :list        li
-           :paragraph   paragraph
-           :phrase      phrase
-           :reference   reference
-           :rectangle   rectangle
-           :section     section
-           :spacer      spacer
+           :anchor anchor
+           :annotation annotation
+           :cell cell
+           :pdf-cell pdf-cell
+           :chapter chapter
+           :chart chart
+           :chunk text-chunk
+           :heading heading
+           :image image
+           :graphics g2d/with-graphics
+           :svg svg-element
+           :line line
+           :list li
+           :paragraph paragraph
+           :phrase phrase
+           :reference reference
+           :rectangle rectangle
+           :section section
+           :spacer spacer
            :superscript superscript
-           :subscript   subscript
-           :table       table
-           :pdf-table   pdf-table
-           (throw (new Exception (str "invalid tag: " tag " in element: " element) )))
+           :subscript subscript
+           :table table
+           :pdf-table pdf-table
+           (throw (new Exception (str "invalid tag: " tag " in element: " element))))
          (cons params elements))))))
 
 (defn- append-to-doc [references font-style width height item doc pdf-writer]
   (if (= [:pagebreak] item)
     (.newPage doc)
     (let [doc-elm (make-section
-                   (assoc font-style
-                     :references references
-                     :left-margin (.leftMargin doc)
-                     :right-margin (.rightMargin doc)
-                     :top-margin (.topMargin doc)
-                     :bottom-margin (.bottomMargin doc)
-                     :page-width width
-                     :page-height height
-                     :pdf-writer pdf-writer)
-                   (or item [:paragraph item]))]
+                    (assoc font-style
+                      :references references
+                      :left-margin (.leftMargin doc)
+                      :right-margin (.rightMargin doc)
+                      :top-margin (.topMargin doc)
+                      :bottom-margin (.bottomMargin doc)
+                      :page-width width
+                      :page-height height
+                      :pdf-writer pdf-writer)
+                    (or item [:paragraph item]))]
       (trace "doc-elm: " (class doc-elm))
       ;(.setFont doc-elm (font font-style))
-    (.add doc doc-elm))))
+      (.add doc doc-elm))))
 
 (defn- add-header [header doc]
   (if header
@@ -730,16 +732,16 @@
                   out]
 
   (let [[nom head] doc-header
-        doc           (new Document (page-orientation (page-size size) orientation))
-        width         (.. doc getPageSize getWidth)
-        height        (.. doc getPageSize getHeight)
+        doc (new Document (page-orientation (page-size size) orientation))
+        width (.. doc getPageSize getWidth)
+        height (.. doc getPageSize getHeight)
         output-stream (if (string? out) (new FileOutputStream out) out)
-        temp-stream   (if (or pages (not (empty? page-events))) (new ByteArrayOutputStream))
-        title-arr     (XmpArray. XmpArray/ALTERNATIVE)
-        footer        (when (not= footer false)
-                        (if (string? footer)
-                          {:text footer :align :right :start-page 1}
-                          (merge {:align :right :start-page 1} footer)))]
+        temp-stream (if (or pages (not (empty? page-events))) (new ByteArrayOutputStream))
+        title-arr (XmpArray. XmpArray/ALTERNATIVE)
+        footer (when (not= footer false)
+                 (if (string? footer)
+                   {:text footer :align :right :start-page 1}
+                   (merge {:align :right :start-page 1} footer)))]
 
     ;;header and footer must be set before the doc is opened, or itext will not put them on the first page!
     ;;if we have to print total pages, then the document has to be post processed
@@ -778,11 +780,11 @@
 
       ;;if we have a letterhead then we want to put it on the first page instead of the header,
       ;;so we will open doc beofore adding the header
-      (if  letterhead
+      (if letterhead
         (do
           (.open doc)
           (doseq [item letterhead]
-            (append-to-doc nil (or font-style {})  width height (if (string? item) [:paragraph item] item) doc pdf-writer))
+            (append-to-doc nil (or font-style {}) width height (if (string? item) [:paragraph item] item) doc pdf-writer))
           (add-header header doc))
         (do
           (add-header header doc)
@@ -801,19 +803,19 @@
   (let [font-width (.getWidthPointKerned base-font (or text "") (float 10))]
     (float
       (condp = align
-        :right  (- page-width (+ 50 font-width))
-        :left   (+ 50 font-width)
+        :right (- page-width (+ 50 font-width))
+        :left (+ 50 font-width)
         :center (- (/ page-width 2) (/ font-width 2))))))
 
 (defn- write-total-pages [doc width {:keys [footer footer-separator]} temp-stream output-stream]
-  (let [reader    (new PdfReader (.toByteArray temp-stream))
-        stamper   (new PdfStamper reader, output-stream)
+  (let [reader (new PdfReader (.toByteArray temp-stream))
+        stamper (new PdfStamper reader, output-stream)
         num-pages (.getNumberOfPages reader)
         base-font (.getBaseFont (font {}))
-        footer    (when (not= footer false)
-                    (if (string? footer)
-                      {:text footer :align :right :start-page 1}
-                      (merge {:align :right :start-page 1} footer)))]
+        footer (when (not= footer false)
+                 (if (string? footer)
+                   {:text footer :align :right :start-page 1}
+                   (merge {:align :right :start-page 1} footer)))]
     (when footer
       (dotimes [i num-pages]
         (if (>= i (dec (or (:start-page footer) 1)))
