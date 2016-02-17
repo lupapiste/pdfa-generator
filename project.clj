@@ -1,4 +1,4 @@
-(defproject pdfa-core "0.0.4"
+(defproject lupapiste/pdfa-generator "1.0.0"
   :description "Wrapper for clj-pdf for PDF/A document generation"
   :url "http://www.lupapiste.fi"
   :license {:name "LGPL 3"

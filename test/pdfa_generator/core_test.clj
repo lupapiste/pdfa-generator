@@ -1,7 +1,7 @@
-(ns pdfa.core-test
+(ns pdfa-generator.core-test
   (:require [midje.sweet :refer :all]
             [taoensso.timbre :refer [trace tracef debug debugf info infof warn warnf error errorf fatal fatalf]]
-            [pdfa.core :as pdfa]
+            [pdfa-generator.core :as pdfa]
             [clojure.java.io :as io])
   (:import (org.apache.pdfbox.pdmodel PDDocument)
            (java.io File FileOutputStream)

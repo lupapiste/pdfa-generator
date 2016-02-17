@@ -1,4 +1,4 @@
-(ns pdfa.core
+(ns pdfa-generator.core
   (:require [clj-pdf.charting :as charting]
             [clj-pdf.svg :as svg]
             [taoensso.timbre :refer [trace tracef debug debugf info infof warn warnf error errorf fatal fatalf]]
