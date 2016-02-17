@@ -1,44 +1,40 @@
 (ns pdfa.core
-  (:use clojure.walk [clojure.set :only (rename-keys)])
   (:require [clj-pdf.charting :as charting]
             [clj-pdf.svg :as svg]
-            [taoensso.timbre :as timbre :refer [trace tracef debug debugf info infof warn warnf error errorf fatal fatalf]]
+            [taoensso.timbre :refer [trace tracef debug debugf info infof warn warnf error errorf fatal fatalf]]
             [clj-pdf.graphics-2d :as g2d]
             [clojure.java.io :as io]
-            [clj-time.format :as timeformat])
-  (:import
-    java.awt.Color
-    [com.lowagie.text.pdf.draw DottedLineSeparator LineSeparator]
-    sun.misc.BASE64Decoder
-    [com.lowagie.text
-     Anchor
-     Annotation
-     Cell
-     ChapterAutoNumber
-     Chunk
-     Document
-     Element
-     Font
-     FontFactory
-     GreekList
-     HeaderFooter
-     Image
-     List
-     ListItem
-     PageSize
-     Paragraph
-     Phrase
-     Rectangle
-     RomanList
-     Section
-     Table
-     ZapfDingbatsList
-     ZapfDingbatsNumberList]
-    [com.lowagie.text.pdf BaseFont PdfContentByte PdfReader PdfStamper PdfWriter PdfPCell PdfPTable PdfDictionary PdfName PdfString PdfDate CMYKColor]
-    [java.io PushbackReader InputStream InputStreamReader FileOutputStream ByteArrayOutputStream]
-    (com.lowagie.text.xml.xmp XmpWriter DublinCoreSchema XmpArray PdfSchema PdfA1Schema)
-    (org.joda.time LocalDateTime)))
-
+            [clj-time.format]
+            [clojure.walk :refer [prewalk]])
+  (:import [java.awt Color]
+           [com.lowagie.text.pdf.draw DottedLineSeparator LineSeparator]
+           [sun.misc BASE64Decoder]
+           [com.lowagie.text
+            Anchor
+            Annotation
+            Cell
+            ChapterAutoNumber
+            Chunk
+            Document
+            Element
+            Font
+            FontFactory
+            GreekList
+            HeaderFooter
+            Image
+            List
+            ListItem
+            PageSize
+            Paragraph
+            Phrase
+            Rectangle
+            RomanList
+            Table
+            ZapfDingbatsList
+            ZapfDingbatsNumberList]
+           [com.lowagie.text.pdf BaseFont PdfReader PdfStamper PdfWriter PdfPCell PdfPTable CMYKColor]
+           [java.io PushbackReader InputStream InputStreamReader FileOutputStream ByteArrayOutputStream]
+           [com.lowagie.text.xml.xmp XmpArray]))
 
 ; This is modified version of https://github.com/yogthos/clj-pdf original is Copyrighted 2015 Dmitri Sotnikov and licenced under LGPL 3
 
@@ -916,7 +912,7 @@
 (defmacro template [t]
   `(fn [~'items]
      (for [~'item ~'items]
-       ~(clojure.walk/prewalk
+       ~(prewalk
           (fn [x#]
             (if (and (symbol? x#) (.startsWith (name x#) "$"))
               `(~(keyword (.substring (name x#) 1)) ~'item)

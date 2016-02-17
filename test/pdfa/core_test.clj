@@ -1,14 +1,10 @@
 (ns pdfa.core-test
   (:require [midje.sweet :refer :all]
-            [taoensso.timbre :as timbre :refer [trace tracef debug debugf info infof warn warnf error errorf fatal fatalf]]
+            [taoensso.timbre :refer [trace tracef debug debugf info infof warn warnf error errorf fatal fatalf]]
             [pdfa.core :as pdfa]
             [clojure.java.io :as io])
   (:import (org.apache.pdfbox.pdmodel PDDocument)
-           (java.io File FileOutputStream FileInputStream)
-           (java.util List ArrayList)
-           (com.lowagie.text.rtf.parser RtfParser)
-           (com.lowagie.text Document)
-           (com.lowagie.text.pdf PdfWriter)
+           (java.io File FileOutputStream)
            (javax.imageio ImageIO)))
 
 ;; Change this to leave the files after test for manual inspection
