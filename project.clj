@@ -4,6 +4,7 @@
   :license {:name "GNU Lesser General Public License - v 3"
             :url  "http://www.gnu.org/licenses/lgpl.html"
             :distribution :repo}
+  :scm {:url "https://github.com/lupapiste/pdfa-generator.git"}
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [com.taoensso/timbre "4.7.4"]
                  [org.clojure/tools.nrepl "0.2.12"]
