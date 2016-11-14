@@ -1,8 +1,8 @@
-(defproject lupapiste/pdfa-generator "1.0.1"
+(defproject lupapiste/pdfa-generator "1.0.2-SNAPSHOT"
   :description "Wrapper for clj-pdf for PDF/A document generation"
   :url "http://www.lupapiste.fi"
-  :license {:name "LGPL 3"
-            :url ""
+  :license {:name "GNU Lesser General Public License - v 3"
+            :url  "http://www.gnu.org/licenses/lgpl.html"
             :distribution :repo}
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [com.taoensso/timbre "4.2.1"]
