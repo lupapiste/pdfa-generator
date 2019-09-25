@@ -2,10 +2,14 @@
   (:require [midje.sweet :refer :all]
             [taoensso.timbre :refer [trace tracef debug debugf info infof warn warnf error errorf fatal fatalf]]
             [pdfa-generator.core :as pdfa]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [clojure.string :as str])
   (:import (org.apache.pdfbox.pdmodel PDDocument)
            (java.io File FileOutputStream)
-           (javax.imageio ImageIO)))
+           (javax.imageio ImageIO)
+           [java.util Base64]
+           [java.awt Toolkit]
+           [com.lowagie.text Image]))
 
 ;; Change this to leave the files after test for manual inspection
 (def delete-files true)
@@ -91,3 +95,9 @@
            (.close doc)
            )
          )
+
+(facts "base64"
+  (let [logo (str/trim-newline (slurp (io/resource "lupapiste-logo-base64.txt")))
+        as-bytes (.decode (Base64/getDecoder) logo)]
+    (fact "image created"
+      (Image/getInstance (.createImage (Toolkit/getDefaultToolkit) as-bytes) nil) => truthy)))

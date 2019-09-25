@@ -1,4 +1,4 @@
-(defproject lupapiste/pdfa-generator "1.0.2"
+(defproject lupapiste/pdfa-generator "1.1.0"
   :description "Wrapper for clj-pdf for PDF/A document generation"
   :url "http://www.lupapiste.fi"
   :license {:name "GNU Lesser General Public License - v 3"
@@ -11,8 +11,8 @@
                  [lupapiste/openpdf "1.0.6"]
                  [clj-pdf "2.2.8" :exclusions [itext com.lowagie/itext]]
                  [org.slf4j/slf4j-log4j12 "1.7.21"]]
-  :plugins [[lein-midje "3.2"]]
-  :profiles {:dev {:dependencies [[midje "1.8.3"]
+  :plugins [[lein-midje "3.2.1"]]
+  :profiles {:dev {:dependencies [[midje "1.9.9"]
                                   [flare "0.2.9"]
                                   [org.apache.pdfbox/pdfbox "2.0.3"]]
                    :injections [(require 'flare.clojure-test)

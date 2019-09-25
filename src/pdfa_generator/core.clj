@@ -8,7 +8,6 @@
             [clojure.walk :refer [prewalk]])
   (:import [java.awt Color]
            [com.lowagie.text.pdf.draw DottedLineSeparator LineSeparator]
-           [sun.misc BASE64Decoder]
            [com.lowagie.text
             Anchor
             Annotation
@@ -34,7 +33,8 @@
             ZapfDingbatsNumberList]
            [com.lowagie.text.pdf BaseFont PdfReader PdfStamper PdfWriter PdfPCell PdfPTable CMYKColor]
            [java.io PushbackReader InputStream InputStreamReader FileOutputStream ByteArrayOutputStream]
-           [com.lowagie.text.xml.xmp XmpArray]))
+           [com.lowagie.text.xml.xmp XmpArray]
+           [java.util Base64]))
 
 ; This is modified version of https://github.com/yogthos/clj-pdf original is Copyrighted 2015 Dmitri Sotnikov and licenced under LGPL 3
 
@@ -64,7 +64,7 @@
 
 (defn- set-background [element {:keys [background]}]
   (when background
-    (let [[r g b] background] (.setBackground element (Color. r g b)))))
+    (let [[r g b] background] (.setBackground element (Color. (int r) (int g) (int b))))))
 
 (defn get-style [style]
   (condp = (when style (name style))
@@ -509,7 +509,7 @@
               (Image/getInstance (.createImage (java.awt.Toolkit/getDefaultToolkit) (.getSource img-data)) nil)
 
               base64
-              (Image/getInstance (.createImage (java.awt.Toolkit/getDefaultToolkit) (.decodeBuffer (new BASE64Decoder) img-data)) nil)
+              (Image/getInstance (.createImage (java.awt.Toolkit/getDefaultToolkit) (.decode (Base64/getDecoder) img-data)) nil)
 
               (= Byte/TYPE (.getComponentType (class img-data)))
               (Image/getInstance (.createImage (java.awt.Toolkit/getDefaultToolkit) img-data) nil)
