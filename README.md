@@ -6,6 +6,6 @@ Wrapper for [clj-pdf](https://github.com/yogthos/clj-pdf) for PDF/A document gen
 
 ## License
 
-Copyright © 2015-2016 Solita Oy.
+Copyright © 2015-2024 Cloudpermit Oy.
 
 Distributed under the GNU Lesser General Public License version 3.
