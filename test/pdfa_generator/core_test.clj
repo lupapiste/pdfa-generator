@@ -4,8 +4,10 @@
             [pdfa-generator.core :as pdfa]
             [clojure.java.io :as io]
             [clojure.string :as str])
-  (:import (org.apache.pdfbox.pdmodel PDDocument)
-           (java.io File FileOutputStream)
+  (:import (org.apache.pdfbox Loader)
+           (org.apache.pdfbox.rendering PDFRenderer)
+           (org.apache.pdfbox.text PDFTextStripper)
+           (java.io File ByteArrayOutputStream)
            (javax.imageio ImageIO)
            [java.util Base64]
            [java.awt Toolkit]
@@ -15,6 +17,7 @@
 (def delete-files true)
 
 (facts "Valid embedded Fonts "
+       (fact "default text is opaque" (.getAlpha (.getColor (pdfa/font {}))) => 255)
        (fact "default Font loads  " (.getPostscriptFontName (.getBaseFont (pdfa/font {:size 22}))) => "LiberationSans")
 ;       (fact "Given existing font loads" (.getPostscriptFontName (.getBaseFont (pdfa/font {:size 22 :ttf-name "liberation-fonts-ttf-2.00.1/LiberationSans-Regular.ttf"}))) => "LiberationSans")
        (fact "Given non-existing font throws exception " (.getPostscriptFontName (.getBaseFont (pdfa/font {:size 22 :ttf-name "fonts/n019003lXXXX.afm"}))) => (throws IllegalArgumentException))
@@ -62,18 +65,14 @@
                                     [:paragraph
                                      "todo localize: :muut.muu"
                                      nil]]]]]]]]]]]]]
-             file (File/createTempFile "test-pdf-core-" ".pdf")
-             fis (FileOutputStream. file)]
+             file (File/createTempFile "test-pdf-core-" ".pdf")]
          (with-open [out (io/output-stream file)]
            (pdfa/pdf pdf-markup out))
 
-         (let [doc (PDDocument/load file)
-               info (.getDocumentInformation doc)]
-           (fact "title" (.getPropertyStringValue info "Title") => "Lupapiste.fi")
-           (fact "keywords" (.getKeywords info) => "Lupapiste.fi, XMP, Metadata")
-
-           ;(debug "dc meta:                   "  (.getInputStreamAsString (.getMetadata (.getDocumentCatalog doc))))
-           )
+         (with-open [doc (Loader/loadPDF file)]
+           (let [info (.getDocumentInformation doc)]
+             (fact "title" (.getTitle info) => "Lupapiste.fi")
+             (fact "keywords" (.getKeywords info) => "Lupapiste.fi, XMP, Metadata")))
          (if delete-files
            (.delete file)
            (debug "**  Created PDF file: " (.getAbsolutePath file)))))
@@ -101,3 +100,28 @@
         as-bytes (.decode (Base64/getDecoder) logo)]
     (fact "image created"
       (Image/getInstance (.createImage (Toolkit/getDefaultToolkit) as-bytes) nil) => truthy)))
+
+(facts "SVG rendering with the current clj-pdf API"
+  (let [svg "<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><rect width='40' height='40' fill='#ff0000'/></svg>"
+        out (ByteArrayOutputStream.)]
+    (pdfa/pdf [{:footer false}
+               [:svg svg]
+               [:pagebreak]
+               [:svg svg]] out)
+    (with-open [doc (Loader/loadPDF (.toByteArray out))]
+      (fact "both pages exist" (.getNumberOfPages doc) => 2)
+      (doseq [page [0 1]]
+        (let [rendered (.renderImage (PDFRenderer. doc) page)]
+          (fact "SVG is painted on each page" (.getRGB rendered 20 20) => (.getRGB java.awt.Color/RED)))))))
+
+(facts "Page numbering survives PDFBox and OpenPDF upgrades"
+  (let [out (ByteArrayOutputStream.)]
+    (pdfa/pdf [{:pages true :footer "Page"}
+               [:paragraph "First page"]
+               [:pagebreak]
+               [:paragraph "Second page"]] out)
+    (with-open [doc (Loader/loadPDF (.toByteArray out))]
+      (let [text (.getText (PDFTextStripper.) doc)]
+        (fact "page count" (.getNumberOfPages doc) => 2)
+        (fact "first page footer" text => (contains "Page 1 / 2"))
+        (fact "second page footer" text => (contains "Page 2 / 2"))))))

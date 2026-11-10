@@ -1,10 +1,10 @@
 (ns pdfa-generator.core
   (:require [clj-pdf.charting :as charting]
-            [clj-pdf.svg :as svg]
+            [clj-pdf.section :as pdf-section]
+            [clj-pdf.section.svg]
             [taoensso.timbre :refer [trace tracef debug debugf info infof warn warnf error errorf fatal fatalf]]
             [clj-pdf.graphics-2d :as g2d]
             [clojure.java.io :as io]
-            [clj-time.format]
             [clojure.walk :refer [prewalk]])
   (:import [java.awt Color]
            [com.lowagie.text.pdf.draw DottedLineSeparator LineSeparator]
@@ -112,7 +112,7 @@
                      styles (compute-font-style styles)
                      style (get-style style)
                      :else Font/NORMAL)
-        font-colour (if (and r g b) (new CMYKColor (int r) (int g) (int b) (min (int r) (int g) (int b))) (new Color 0 0 0 1))]
+        font-colour (if (and r g b) (new CMYKColor (int r) (int g) (int b) (min (int r) (int g) (int b))) Color/BLACK)]
     ; for UnicodeTrueType the encoding needs to be BaseFont/IDENTITY_H or BaseFont/IDENTITY_V
     (FontFactory/getFont resource-url BaseFont/WINANSI true font-size font-style font-colour)))
 
@@ -610,13 +610,9 @@
         (swap! *cache* assoc chart-hash compiled)
         compiled))))
 
-(defn- svg-element [& params]
-  (let [svg-hash (.hashCode params)]
-    (if-let [cached (get *cache* svg-hash)]
-      cached
-      (let [compiled (apply svg/render params)]
-        (swap! *cache* assoc svg-hash compiled)
-        compiled))))
+(defn- svg-element [meta svg-data]
+  (binding [pdf-section/*cache* *cache*]
+    (pdf-section/render :svg meta svg-data)))
 
 (defn- line [{dotted? :dotted, gap :gap} & _]
   (doto (if dotted?
