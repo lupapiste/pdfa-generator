@@ -125,3 +125,19 @@
         (fact "page count" (.getNumberOfPages doc) => 2)
         (fact "first page footer" text => (contains "Page 1 / 2"))
         (fact "second page footer" text => (contains "Page 2 / 2"))))))
+
+(facts "Phrases accept text and elements with OpenPDF 2"
+  (let [out (ByteArrayOutputStream.)]
+    (pdfa/pdf [{:footer false}
+               [:paragraph [:phrase "Plain " nil 42 " "
+                            [:chunk {:style :bold} "bold"]
+                            [:phrase " nested"]]]
+               [:pdf-table {} [1]
+                [[:pdf-table {} [1]
+                  [[:pdf-cell "Nested cell text"]]]]]] out)
+    (with-open [doc (Loader/loadPDF (.toByteArray out))]
+      (let [text (.getText (PDFTextStripper.) doc)]
+        (fact "mixed phrase content is preserved"
+          text => (contains "Plain 42 bold nested"))
+        (fact "explicit string cells in nested tables render"
+          text => (contains "Nested cell text"))))))

@@ -7,6 +7,10 @@
             [clojure.java.io :as io]
             [clojure.walk :refer [prewalk]])
   (:import [java.awt Color]
+           [com.lowagie.text.alignment HorizontalAlignment]
+           [com.lowagie.text.pdf FontMapper]
+           [org.jfree.chart ChartFactory]
+           [org.jfree.data.general DefaultPieDataset]
            [com.lowagie.text.pdf.draw DottedLineSeparator LineSeparator]
            [com.lowagie.text
             Anchor
@@ -46,7 +50,8 @@
 (declare make-section)
 
 (defn- styled-item [meta item]
-  (make-section meta (if (string? item) [:chunk item] item)))
+  (let [element (make-section meta item)]
+    (if (string? element) (make-section meta [:chunk element]) element)))
 
 (defn- pdf-styled-item [meta item]
   (make-section meta (if (string? item) [:phrase item] item)))
@@ -61,6 +66,9 @@
     "middle" Element/ALIGN_MIDDLE
     "bottom" Element/ALIGN_BOTTOM
     Element/ALIGN_LEFT))
+
+(defn- horizontal-alignment [align]
+  (.orElse (HorizontalAlignment/of (get-alignment align)) HorizontalAlignment/LEFT))
 
 (defn- set-background [element {:keys [background]}]
   (when background
@@ -115,6 +123,24 @@
         font-colour (if (and r g b) (new CMYKColor (int r) (int g) (int b) (min (int r) (int g) (int b))) Color/BLACK)]
     ; for UnicodeTrueType the encoding needs to be BaseFont/IDENTITY_H or BaseFont/IDENTITY_V
     (FontFactory/getFont resource-url BaseFont/WINANSI true font-size font-style font-colour)))
+
+(def ^:private embedded-font-mapper
+  (reify FontMapper
+    (awtToPdf [_ awt-font]
+      (let [family (case (.getFamily awt-font)
+                     ("Serif" "Liberation Serif" "Times New Roman") "Serif"
+                     ("Monospaced" "Liberation Mono" "Courier New") "Mono"
+                     "Sans")
+            style (cond
+                    (and (.isBold awt-font) (.isItalic awt-font)) "BoldItalic"
+                    (.isBold awt-font) "Bold"
+                    (.isItalic awt-font) "Italic"
+                    :else "Regular")]
+        (BaseFont/createFont
+          (str "liberation-fonts-ttf-2.00.1/Liberation" family "-" style ".ttf")
+          BaseFont/IDENTITY_H true)))
+    (pdfToAwt [_ _ size]
+      (java.awt.Font. "SansSerif" java.awt.Font/PLAIN (int size)))))
 
 (defn- page-size [size]
   (condp = (when size (name size))
@@ -249,9 +275,16 @@
 (defn- phrase
   [meta & content]
   (let [leading (:leading meta)
+        phrase-font (font meta)
         p (doto (new Phrase)
-            (.setFont (font meta))
-            (.addAll (map (partial make-section meta) content)))]
+            (.setFont phrase-font))]
+    ;; OpenPDF's addAll accepts Elements only; make-section returns strings
+    ;; for scalar content (including numbers and nil).
+    (doseq [item content
+            :let [element (make-section meta item)]]
+      (.add p ^Element (if (string? element)
+                         (Chunk. element phrase-font)
+                         element)))
     (if leading (.setLeading p (float leading))) p))
 
 (defn- text-chunk [style content]
@@ -324,12 +357,12 @@
           (if border-width-left (.setBorderWidthLeft c (float border-width-left)))
           (if border-width-right (.setBorderWidthRight c (float border-width-right)))
           (if border-width-top (.setBorderWidthTop c (float border-width-top)))
-          (.setHorizontalAlignment c (get-alignment align))))
+          (.setHorizontalAlignment c (horizontal-alignment align))))
 
-      (if (string? content) c (doto c (.addElement (make-section meta content)))))
+      (if (string? content) c (doto c (.addElement (styled-item meta content)))))
 
     :else
-    (doto (new Cell) (.addElement (make-section meta element)))))
+    (doto (new Cell) (.addElement (styled-item meta element)))))
 
 
 (defn- pdf-cell [meta element]
@@ -378,10 +411,10 @@
           (.setHorizontalAlignment c (get-alignment align))
           (.setVerticalAlignment c (get-alignment valign))))
 
-      (if (string? content) c (doto c (.addElement (make-section meta content)))))
+      (if (string? content) c (doto c (.addElement (styled-item meta content)))))
 
     :else
-    (doto (new PdfPCell) (.addElement (make-section meta element)))))
+    (doto (new PdfPCell) (.addElement (styled-item meta element)))))
 
 
 
@@ -398,7 +431,7 @@
                             (make-section [:chunk {:style "bold"} header])
                             (make-section header))
               header-cell (doto (new Cell header-text)
-                            (.setHorizontalAlignment 1)
+                            (.setHorizontalAlignment HorizontalAlignment/CENTER)
                             (.setHeader true)
                             (.setColspan cols))]
           (set-bg header-cell)
@@ -412,7 +445,7 @@
             (when-not (and (string? h)
                            (map? (second h)))
               (when-let [align (:align (second h))]
-                (.setHorizontalAlignment header-cell (get-alignment align))))
+                (.setHorizontalAlignment header-cell (horizontal-alignment align))))
             (set-bg header-cell)
             (.addCell tbl header-cell)))))
     (.endHeaders tbl)))
@@ -444,7 +477,7 @@
     (if offset (.setOffset tbl (float offset)))
     (table-header tbl header cols)
 
-    (.setAlignment tbl (get-alignment align))
+    (.setHorizontalAlignment tbl (horizontal-alignment align))
 
     (doseq [row rows]
       (doseq [column row]
@@ -474,7 +507,6 @@
     (when (= false cell-border)
       (doto (.getDefaultCell tbl) (.setBorder Rectangle/NO_BORDER)))
 
-    (if color (let [[r g b] color] (.setBackgroundColor tbl (new Color (int r) (int g) (int b)))))
     (if spacing-before (.setSpacingBefore tbl (float spacing-before)))
     (if spacing-after (.setSpacingAfter tbl (float spacing-after)))
 
@@ -482,7 +514,11 @@
 
     (doseq [row rows]
       (doseq [column row]
-        (.addCell tbl (pdf-cell meta column))))
+        (let [cell (pdf-cell meta column)]
+          (when (and color (nil? (.getBackgroundColor cell)))
+            (let [[r g b] color]
+              (.setBackgroundColor cell (Color. (int r) (int g) (int b)))))
+          (.addCell tbl cell))))
 
     tbl))
 
@@ -577,7 +613,7 @@
     (doseq [item content]
       (if (and (coll? item) (= "section" (name (first item))))
         (make-section (assoc meta :parent sec) item)
-        (.add sec (make-section meta (if (string? item) [:chunk item] item)))))))
+        (.add sec ^Element (styled-item meta item))))))
 
 
 (defn- subscript [meta text]
@@ -587,10 +623,27 @@
 (defn- superscript [meta text]
   (text-chunk (assoc meta :super true) text))
 
+(defn- vector-pie-chart [{:keys [title background width height] :as meta} items]
+  (let [dataset (DefaultPieDataset.)]
+    (doseq [[label value] items]
+      (.setValue dataset ^String label (double value)))
+    (let [chart (ChartFactory/createPieChart title dataset true true false)
+          plot (.getPlot chart)]
+      ;; JFreeChart's translucent shadows are forbidden in PDF/A-1.
+      (.setLabelShadowPaint plot nil)
+      (.setShadowPaint plot nil)
+      (when background
+        (let [[r g b] background]
+          (.setBackgroundPaint plot (Color. (int r) (int g) (int b)))))
+      (g2d/with-graphics meta
+        #(.draw chart % (java.awt.Rectangle. 0 0 (int width) (int height)))))))
+
 (defn- make-chart [& [meta & more :as params]]
   (let [{:keys [vector align width height page-width page-height]} meta]
     (if vector
-      (apply charting/chart params)
+      (if (= "pie-chart" (some-> (:type meta) name))
+        (vector-pie-chart meta more)
+        (apply charting/chart params))
       (image
         (cond
           (and align width height) meta
@@ -602,13 +655,16 @@
                   :height (* 0.85 page-height)))
         (apply charting/chart params)))))
 
-(defn- chart [& params]
-  (let [chart-hash (.hashCode params)]
-    (if-let [cached (get @*cache* chart-hash)]
-      cached
-      (let [compiled (apply make-chart params)]
-        (swap! *cache* assoc chart-hash compiled)
-        compiled))))
+(defn- chart [& [meta :as params]]
+  (if (:vector meta)
+    ;; Vector rendering draws directly onto the current page.
+    (apply make-chart params)
+    (let [chart-hash (.hashCode params)]
+      (if-let [cached (get @*cache* chart-hash)]
+        cached
+        (let [compiled (apply make-chart params)]
+          (swap! *cache* assoc chart-hash compiled)
+          compiled)))))
 
 (defn- svg-element [meta svg-data]
   (binding [pdf-section/*cache* *cache*]
@@ -692,7 +748,8 @@
                       :bottom-margin (.bottomMargin doc)
                       :page-width width
                       :page-height height
-                      :pdf-writer pdf-writer)
+                      :pdf-writer pdf-writer
+                      :font-mapper (or (:font-mapper font-style) embedded-font-mapper))
                     (or item [:paragraph item]))]
       (trace "doc-elm: " (class doc-elm))
       ;(.setFont doc-elm (font font-style))
@@ -701,7 +758,7 @@
 (defn- add-header [header doc]
   (if header
     (.setHeader doc
-                (doto (new HeaderFooter (new Phrase header) false) (.setBorderWidthTop 0)))))
+                (doto (new HeaderFooter (new Phrase header (font {})) false) (.setBorderWidthTop 0)))))
 
 
 (defn- setup-doc [{:keys [left-margin

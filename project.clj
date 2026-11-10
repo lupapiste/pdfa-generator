@@ -1,4 +1,4 @@
-(defproject lupapiste/pdfa-generator "1.1.2"
+(defproject lupapiste/pdfa-generator "1.1.3"
   :description "Wrapper for clj-pdf for PDF/A document generation"
   :url "http://www.lupapiste.fi"
   :license {:name         "GNU Lesser General Public License - v 3"
