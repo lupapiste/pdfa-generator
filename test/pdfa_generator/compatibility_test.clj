@@ -1,5 +1,6 @@
 (ns pdfa-generator.compatibility-test
   (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [midje.sweet :refer :all]
             [pdfa-generator.core :as pdfa])
   (:import [java.io ByteArrayOutputStream]
@@ -11,6 +12,11 @@
   (let [out (ByteArrayOutputStream.)]
     (pdfa/pdf markup out)
     (.toByteArray out)))
+
+;; PDFBox infers word spaces from glyph positions, which vary with AWT fonts
+;; across platforms. Chart smoke tests check text content, not exact spacing.
+(defn- chart-text [stripper doc]
+  (str/replace (.getText ^PDFTextStripper stripper doc) #"\s+" ""))
 
 (defn- document-text [markup]
   (with-open [doc (Loader/loadPDF (generate markup))]
@@ -75,7 +81,7 @@
         (fact "PDFBox can render the chart" (.renderImage (PDFRenderer. doc) 0) => truthy)
         (when vector?
           (fact "vector text remains extractable"
-            (.getText (PDFTextStripper.) doc) => (contains "Chart title")))))))
+            (chart-text (PDFTextStripper.) doc) => (contains "Charttitle")))))))
 
 (facts "Vector charts are drawn on every page"
   (let [chart [:chart {:type :line-chart :vector true :title "Repeated chart"
@@ -84,7 +90,7 @@
       (doseq [page [1 2]]
         (let [stripper (doto (PDFTextStripper.) (.setStartPage page) (.setEndPage page))]
           (fact "chart text exists on each page"
-            (.getText stripper doc) => (contains "Repeated chart")))))))
+            (chart-text stripper doc) => (contains "Repeatedchart")))))))
 
 (facts "Remaining element integrations generate readable PDFs"
   (doseq [element [[:list {:numbered true} "Content"]
